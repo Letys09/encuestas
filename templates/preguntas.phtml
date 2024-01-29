@@ -1,0 +1,325 @@
+<?php include 'header.phtml'; ?>
+<div class="row page-titles">
+	<div class="col-md-5 align-self-center">
+		<h3 class="text-themecolor"><i class="fa fa-users"></i> Preguntas</h3>
+	</div>
+</div>
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-12">
+			<div class="card">
+				<div class="card-body">
+					<h4 class="card-title">Preguntas registradas</h4>
+					<h6 class="card-subtitle">Crea, edita y elimina preguntas para tus encuestas.</h6>
+					<div class="table-responsive">
+						<table id="tbl-preguntas" class="table table-hover table-striped"></table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div id="frm-pregunta" class="modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content d-flex p-2">
+				<div class="modal-header">
+					<h3 class="modal-title">Contenido de la pregunta</h3>
+				</div>
+				<div class="modal-body">
+					<div class="form-group">
+						<textarea id="pregunta-pregunta" class="form-control data-pregunta not-empty" cols="30" rows="5" placeholder="Ingresa el contenido de la pregunta"></textarea>
+					</div>
+				</div>
+				<div class="modal-footer d-flex justify-content-end">
+					<input type="hidden" id="pregunta-ID_pregunta" value="0">
+					<button type="button" class="btn btn-inverse waves-effect waves-light m-r-20" data-dismiss="modal">Cancelar</button>
+					<button type="button" class="btn btn-success waves-effect waves-light" id="btnSavePregunta">Guardar</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div id="frm-encuestas" class="modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content d-flex p-2">
+				<div class="modal-header">
+					<h3 class="modal-title"></h3>
+				</div>
+				<div class="modal-body">
+					<div class="table-responsive">
+						<table id="tbl-encuestas" class="table table-hover table-striped">
+							<thead>
+								<tr>
+									<th class="font-weight-bold text-center">Folio</th>
+									<th class="font-weight-bold text-left w-75">Nombre</th>
+									<th class="font-weight-bold text-center"></th>
+								</tr>
+							</thead>
+							<tbody></tbody>
+						</table>
+					</div>
+				</div>
+				<div class="modal-footer d-flex justify-content-end">
+					<button type="button" class="btn btn-inverse waves-effect waves-light m-r-20" data-dismiss="modal">Cerrar</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<?php include 'footer.phtml'; ?>
+<script>
+	$(function() {
+		$apiUrl = '<?= URL_API ?>';
+
+		$('#pregunta-pregunta').change(function() {
+			$('.invalid-name').remove();
+			$.get($apiUrl+'pregunta/getByPregunta/'+$('#pregunta-pregunta').val(), function(pregunta) {
+				if(pregunta.result.length > 0) {
+					if(pregunta.result.length>1 || pregunta.result[0].ID_pregunta!=parseInt($('#pregunta-ID_pregunta').val())) {
+						$errLabel = $('<div class="invalid-name">Ya existe una pregunta con el mismo texto</div>');
+						$('#pregunta-pregunta').after($errLabel);
+						$errLabel.show();
+					}
+				}
+			}, 'json');
+		});
+
+		getPreguntas(); function getPreguntas() { cleanTable('tbl-preguntas'); createTable('tbl-preguntas', true); }
+
+		function clearData() {
+			$('.invalid-tooltip').remove();
+			$('.status:not(small), .help-block').addClass('hide');
+			$('#frm-pregunta textarea').val('');
+			$('#pregunta-ID_pregunta').val(0);
+		}
+
+		$('tbody').on('click', '.btnEditPregunta', function(event) { event.preventDefault(); blockPage();
+			$('#frm-pregunta .validation-error-label').remove();
+			clearData();
+
+			id = $(this).parents('tr').data('id');
+			$.get($apiUrl+'pregunta/get/'+id, function(data) {
+				$.each(data.result, function(index, value) { $('#pregunta-'+index).val(value); });
+				$('.help-block').removeClass('hide');
+
+				$('#frm-pregunta').modal('show');
+				$.unblockUI();
+			}, 'json');
+		});
+
+		$('#frm-pregunta').on('shown.bs.modal', function () { $('#pregunta-pregunta').focus(); });
+
+		$('#btnSavePregunta').click(function() {
+			$('.invalid-tooltip').remove();
+			id = parseInt($('#pregunta-ID_pregunta').val());
+			data = { pregunta: $('#pregunta-pregunta').val() };
+
+			$errLabel = $('<div class="invalid-tooltip"></div>');
+			if(data.pregunta == '') { $errLabel.html('Debe ingresar el contenido de la pregunta'); $('#pregunta-pregunta').after($errLabel); $errLabel.show(); }
+			else {
+				blockPage();
+				if(id == 0) {
+					data.status = 1;
+					data.fecha = moment().format('YYYY-MM-DDTHH:mm:ss');
+					$.post($apiUrl+'pregunta/add/', data, function(resp) {
+						if(resp.response) {
+							data.ID_pregunta = resp.result;
+							cleanTable('tbl-preguntas');  createTable('tbl-preguntas', true);
+							$('#pregunta-ID_pregunta').val(0);
+
+							$('#frm-pregunta').modal('hide');
+							swal({ type:"success", title:"¡Listo!", text:"Se guardaron los datos correctamente.", timer:4000 });
+						} else { swal({ type:"warning", title:"Oops!", text:resp.message, timer:4000 }); }
+
+						$.unblockUI();
+					}, 'json');
+				} else {
+					$.ajax({ url:$apiUrl+'pregunta/edit/'+id, type:'POST', dataType:'json', data:data }).done(function(resp) {
+						if(resp.response) {
+							$('#pregunta-ID_pregunta').val(0);
+							$('#tbl-preguntas').DataTable().ajax.reload(function(response) { 
+								swal({ type:"success", title:"¡Listo!", text:"Se guardaron los datos correctamente.", timer:4000 });
+
+								$('#frm-pregunta').modal('hide'); 
+								$.unblockUI();
+							}, false);
+						} else { swal({ type:"warning", title:"Oops!", text:resp.message, timer:4000 }); }
+					});
+				}
+			}
+		});
+
+		$('tbody').on('click', '.btnDelPregunta', function(event) { event.preventDefault(); blockPage();
+			trp = $(this).parents('tr');
+			id = trp.data('id');
+
+			$.get($apiUrl+'universo/getByPregunta/'+id+'/1', function(encuestas) { 
+				if(encuestas.total == 0) {
+					swal({title:"Eliminar pregunta",text:"No podrá restaurar la pregunta.<br>Si la pregunta esta en una encuesta inactiva también será dada de baja de dicha encuesta.",type:"warning",html:true,showCancelButton:true,cancelButtonText:"Cancelar",confirmButtonColor:"#DD6B55",confirmButtonText:"Si, eliminar",closeOnConfirm:false}, function(user_response) {
+						if(user_response) {
+							$.ajax({url:$apiUrl+'pregunta/del/'+id,type:'POST',dataType:'json',success:function(resp) {
+								if(resp.response) {
+									cleanTable('tbl-preguntas'); trp.remove(); createTable('tbl-preguntas');
+									swal({type:"success",title:"¡Listo!",text:"Se eliminó la pregunta",timer:4000});
+								} else { swal({ type: "warning", title: "Oops!", text: resp.message, timer: 4000 }); }
+			
+								$.unblockUI();
+							}});
+						} else { $.unblockUI(); }
+					});
+				} else { swal({ type: "warning", title: "Oops!", text: "Elimina la pregunta de todas las encuestas activas donde haya sido agregada primero", timer: 4000 }, function() { $.unblockUI(); }); }
+			}, 'json');
+		});
+
+		$('tbody').on('click', '.btnAlta', function(event) { event.preventDefault();
+			trp = $(this).parents('tr');
+			id = trp.data('id');
+			swal({ title:"Activar pregunta", text:"¿Desea activar la pregunta?<br>Esta volverá a ser visible en todas las encuestas donde haya sido agregada", type:"warning", html:true, showCancelButton:true, cancelButtonText:"Cancelar", confirmButtonText:"Si, activar", closeOnConfirm:true }, function() {
+				blockPage();
+				$.ajax({ url: $apiUrl+'pregunta/edit/'+id, type: 'POST', dataType: 'json', data: {status: 1} }).done(function(resp) {
+					if(resp.response) {
+						$('#tbl-preguntas').DataTable().ajax.reload(function(response) { 
+							swal({ type:"success", title:"¡Listo!", text:"Se guardaron los datos correctamente.", timer:4000 });
+
+							$.unblockUI(); 
+						}, false);
+					} else { swal({ type: "warning", title: "Oops!", text: resp.message, timer: 4000 }, function() { $.unblockUI(); }); }
+				});
+			});
+		});
+
+		$('tbody').on('click', '.btnBaja', function(event) { event.preventDefault(); blockPage();
+			trp = $(this).parents('tr');
+			id = trp.data('id');
+			$.get($apiUrl+'universo/getByPregunta/'+id+'/1', function(encuestas) { 
+				if(encuestas.total == 0) {
+					swal({ title:"Inactivar pregunta", text:"¿Desea inactivar la pregunta?<br>Si la pregunta está en una encuesta inactiva y después activa esta última, la pregunta no será visible", type:"warning", html:true, showCancelButton:true, cancelButtonText:"Cancelar", confirmButtonText:"Si, inactivar", closeOnConfirm:true }, function(user_response) {
+						if(user_response) {
+							$.ajax({ url: $apiUrl+'pregunta/edit/'+id, type: 'POST', dataType: 'json', data: {status: 2} }).done(function(resp) {
+								if(resp.response) {
+									$('#tbl-preguntas').DataTable().ajax.reload(function(response) { 
+										swal({ type:"success", title:"¡Listo!", text:"Se guardaron los datos correctamente.", timer:4000 });
+	
+										$.unblockUI(); 
+									}, false);
+								} else { swal({ type: "warning", title: "Oops!", text: resp.message, timer: 4000 }, function() { $.unblockUI(); }); }
+							});
+						} else { $.unblockUI(); }
+					});
+				} else { swal({ type: "warning", title: "Oops!", text: "Elimina la pregunta de todas las encuestas activas donde haya sido agregada primero", timer: 4000 }, function() { $.unblockUI(); }); }
+			}, 'json');
+		});
+
+		$('tbody').on('click', '.btnVerEncuestas', function(event) { event.preventDefault(); blockPage();
+			trp = $(this).parents('tr');
+			id = trp.data('id');
+			trInfo = getTrElement('tbl-preguntas', trp);
+			$.get($apiUrl+'universo/getByPregunta/'+id+'/1', function(encuestas) { 
+				$('#frm-encuestas .modal-title').html('Encuestas pregunta folio <strong>'+trInfo.find('.folio').text()+'</strong>');
+				container = $('#tbl-encuestas tbody'); cleanTable('tbl-encuestas'); container.empty();
+				$.each(encuestas.result, function(index, encuesta) { folio = encuesta.ID_encuesta; folio = "E-"+(folio.length<3? folio.padStart(3, '0'): folio);
+					tr = $('<tr data-id="'+encuesta.ID_universo+'"></tr>').appendTo(container);
+					tr.append('<td class="text-center"><small class="folio">'+folio+'</small></td>');
+					tr.append('<td class="text-left"><small class="nombre">'+encuesta.nombre.toUpperCase()+'</small></td>');
+					tr.append('<td class="text-center"><small class="nombre"><a href="#" data-toogle="tooltip" data-placement="top" title="Dar de baja" class="btnBajaEncuesta"><i class="mdi mdi-delete" style="color: red;"></i></a></small></td>');
+				});
+
+				createTable('tbl-encuestas', false);
+				$('#frm-encuestas').modal('show');
+			}, 'json');
+		});
+
+		$('tbody').on('click', '.btnBajaEncuesta', function(event) { event.preventDefault(); blockPage();
+			trp = $(this).parents('tr');
+			id = trp.data('id');
+			trInfo = getTrElement('tbl-encuestas', trp);
+
+			swal({title:"Dar de baja pregunta",text:"No podrá restaurar la pregunta",type:"warning",html:true,showCancelButton:true,cancelButtonText:"Cancelar",confirmButtonColor:"#DD6B55",confirmButtonText:"Si, eliminar",closeOnConfirm:false}, function(user_response) {
+				if(user_response) {
+					$.ajax({url:$apiUrl+'universo/del/'+id,type:'POST',dataType:'json',success:function(resp) {
+						if(resp.response) {
+							cleanTable('tbl-encuestas'); trp.remove(); createTable('tbl-encuestas');
+							swal({type:"success",title:"¡Listo!",text:"Se dio de baja la pregunta",timer:4000});
+						} else { swal({ type: "warning", title: "Oops!", text: resp.message, timer: 4000 }); }
+	
+						$.unblockUI();
+					}});
+				} else { $.unblockUI(); }
+			});
+		});
+
+		var temporal = null;
+		function evaluar(tbl, time) {
+			setTimeout(() => {
+				if(time == temporal) {
+					$("#"+tbl+"_filter label input").val($.trim($('#'+tbl+'-bus').val())).trigger('keyup');
+				}
+			}, 1000);
+		}
+
+		function createTable(tbl, paging=true) { blockPage();
+			container = $('<div class="form-inline"></div>');
+
+			searchContainer = $('<div class="input-group"></div>').appendTo(container);
+			search = $('<input type="text" id="'+tbl+'-bus" placeholder="Buscar por nombre" class="form-control">').appendTo(searchContainer);
+
+			if(['tbl-preguntas'].includes(tbl)) {
+				url = $apiUrl+'pregunta/getAllDataTables/0/0/_';
+				columnDefs = [
+					{'data': 'ID_pregunta', 'title': 'Folio', 'orderable': true, 'targets': [0], 'className': 'text-center'},
+					{'data': 'fecha', 'title': 'Agregada', 'orderable': true, 'targets': [1], 'className': 'text-center'},
+					{'data': 'pregunta', 'title': 'Pregunta', 'orderable': true, 'targets': [2], 'className': 'text-left'},
+					{'data': 'status', 'title': 'Estatus', 'orderable': true, 'targets': [3], 'className': 'text center'},
+					{'data': 'acciones', 'title': '', 'orderable': false, 'targets': [4], 'className': 'text-right'},
+				];
+
+				buttonsContainer = $('<div class="buttons"></div>').appendTo(container);
+				buttonPDF = $('<button type="button" class="btn ml-2 btn-sm btn-inline-block" title="Exportar a PDF" id="btnPDF"><span class="mdi mdi-file-pdf-box fa-2x" style="color: red;"></span></button>').appendTo(buttonsContainer);
+				buttonExcel = $('<button type="button" class="btn btn-sm btn-inline-block" title="Exportar a Excel" id="btnExcel"><span class="mdi mdi-file-excel-box fa-2x" style="color: green;"></span></button>').appendTo(buttonsContainer);
+				buttonAdd = $('<button type="button" class="btn btn-sm btn-inline-block" title="Agregar" id="btnAdd"><span class="mdi mdi-library-plus fa-2x text-success"></span></button>').appendTo(buttonsContainer);
+				$('[data-toggle="tooltip"]').tooltip();
+
+				var table = $('#'+tbl).dataTable( {
+					scrollX: false,
+					paging: paging,
+					pagingType: "full_numbers",
+					dom: 'Rl<"#toolbar-'+tbl+'">frtip',
+					columnDefs: columnDefs,
+					scrollCollapse: true,
+					order: [[0,'desc']],
+					processing: true,
+					serverSide: true,
+					ajax: {
+						url: url,
+						type: 'GET',
+					},
+					createdRow: function(row, data, dataIndex) {
+						$(row).attr('data-id', data.data_id);
+					},
+					drawCallback: function(settings) {
+						$.unblockUI();
+					}
+				});
+			} else {
+				$('#'+tbl).dataTable({
+					scrollX: false,
+					paging: paging,
+					pagingType: "full_numbers",
+					dom: 'Rl<"#toolbar-'+tbl+'">frtip',
+					order: [[0, 'asc']],
+					drawCallback: function(settings) {
+						$.unblockUI();
+					}
+				});
+			}
+
+			$('#toolbar-'+tbl+'').addClass('form-inline pull-right').html(container.html());
+			$('#'+tbl).parents('.table-responsive').css('overflow', 'visible');
+			$("#"+tbl+"_filter label").hide();
+
+			$(document).find('#'+tbl+'-bus').off('keyup').keyup(function(e) { temporal = moment().format('x')+"-"+Math.random(); evaluar(tbl, temporal); });
+			$(document).find('#'+tbl+'-bus').off('search').on("search", function(evt) { $("#"+tbl+"_filter label input").val(undefined).trigger('keyup'); });
+			$(document).find('#btnAdd').off('click').click(function(e) { e.preventDefault(); clearData(); $('#frm-pregunta').modal('show'); });
+			$(document).find('#btnPDF').off('click').click(function(e) { toSearch = $('#'+tbl+'-bus').val().length>0? $('#'+tbl+'-bus').val(): '_'; window.open($apiUrl+'pregunta/export/pdf/'+toSearch); });
+			$(document).find('#btnExcel').off('click').click(function(e) { toSearch = $('#'+tbl+'-bus').val().length>0? $('#'+tbl+'-bus').val(): '_'; window.open($apiUrl+'pregunta/export/xlsx/'+toSearch); });
+		}
+	});
+</script>

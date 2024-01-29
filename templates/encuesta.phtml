@@ -1,0 +1,307 @@
+<?php 
+	include 'core/defines.php'; 
+
+	$parts = explode('/', $_SERVER['REQUEST_URI']);
+	$code = md5(end($parts));
+?>
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="">
+		<meta name="author" content="Ansonika">
+		<title><?= ucfirst($vista) . ' | ' . SITE_NAME ?></title>
+		<!-- <link rel="shortcut icon"  type="image/x-icon" href="<?= URL_ROOT ?>/assets/img/favicon.ico"> -->
+		<link rel="shortcut icon"  type="image/x-icon" href="<?= URL_ROOT ?>/assets/images/favicon-32x32.png">
+		<link rel="apple-touch-icon" type="image/x-icon" href="<?= URL_ROOT ?>/assets/img/apple-touch-icon-57x57-precomposed.png">
+		<link rel="apple-touch-icon" type="image/x-icon" sizes="72x72" href="<?= URL_ROOT ?>/assets/img/apple-touch-icon-72x72-precomposed.png">
+		<link rel="apple-touch-icon" type="image/x-icon" sizes="114x114" href="<?= URL_ROOT ?>/assets/img/apple-touch-icon-114x114-precomposed.png">
+		<link rel="apple-touch-icon" type="image/x-icon" sizes="144x144" href="<?= URL_ROOT ?>/assets/img/apple-touch-icon-144x144-precomposed.png">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Caveat|Poppins:300,400,500,600,700&display=swap">
+		<link rel="stylesheet" href="<?= URL_ROOT ?>/assets/css/bootstrap.min.css">
+		<link rel="stylesheet" href="<?= URL_ROOT ?>/assets/css/style.css">
+		<link rel="stylesheet" href="<?= URL_ROOT ?>/assets/css/vendors.css">
+		<link rel="stylesheet" href="<?= URL_ROOT ?>/assets/css/custom.css">
+		<link rel="stylesheet" type="text/css" href="<?= URL_ROOT ?>/assets/plugins/sweetalert/sweetalert.css">
+		<link rel="stylesheet" type="text/css" href="<?= URL_ROOT ?>/assets/plugins/confirm/css/jquery-confirm.min.css">
+	</head>
+	<body class="style_2">
+		<div id="preloader">
+			<div data-loader="circle-side"></div>
+		</div>
+		<div id="loader_form">
+			<div data-loader="circle-side-2"></div>
+		</div>
+		<header>
+			<div class="container-fluid">
+				<div class="row">
+					<!-- <div class="col-5">
+						<a href="index.html"><img src="< ?= URL_ROOT ?>/assets/images/logatm.png" alt="" width="100" height="110"></a>
+					</div> -->
+					<!-- <div class="col-7">
+						<div id="social">
+							<ul>
+								<li><a href="#0"><i class="social_facebook"></i></a></li>
+								<li><a href="#0"><i class="social_twitter"></i></a></li>
+								<li><a href="#0"><i class="social_instagram"></i></a></li>
+								<li><a href="#0"><i class="social_linkedin"></i></a></li>
+							</ul>
+						</div>
+					</div> -->
+				</div>
+			</div>
+		</header>
+		<div class="wrapper_centering">
+			<div class="container_centering">
+				<div class="container">
+					<?php if($url->response): ?>
+					<div class="row justify-content-between">
+						<div class="col-xl-6 col-lg-6 d-flex align-items-center">
+							<div class="main_title_1">
+								<h3><img src="<?= URL_ROOT ?>/assets/images/Logo_ATM.png" width="80" height="80" alt=""> <?= ucfirst($vista) ?></h3>
+								<!-- <p>An mei sadipscing dissentiet, eos ea partem viderer facilisi. Brute nostrud democritum in vis, nam ei erat zril mediocrem. No postea diceret vix.</p> -->
+								<p><em>Encuesta de satisfacci&oacute;n</em></p>
+							</div>
+						</div>
+						<div class="col-xl-5 col-lg-5">
+							<div id="wizard_container">
+								<div id="top-wizard">
+									<div id="progressbar"></div>
+								</div>
+								<form id="wrapped" method="POST" autocomplete="off">
+									<input id="website" name="website" type="text" value="">
+									<div id="middle-wizard">
+										<?php $counter=0; foreach($url->preguntas as $pregunta): $counter++; ?>
+										<div class="step" data-id="<?= $pregunta->ID_pregunta ?>">
+											<input type="hidden" id="question_<?= $counter ?>">
+											<h3 class="main_question"><strong><?= $counter ?> of <?= count($url->preguntas) ?></strong><?= $pregunta->pregunta ?></h3>
+											<div class="review_block_smiles">
+												<ul class="clearfix">
+													<li>
+														<div class="container_smile">
+															<input type="radio" name="question_<?= $pregunta->ID_pregunta ?>" class="required" value="0" id="very_bad_<?= $counter ?>" data-counter="<?= $counter ?>">
+															<label class="radio smile_1" for="very_bad_<?= $counter ?>"><span>1</span></label>
+														</div>
+													</li>
+													<li>
+													<div class="container_smile">
+															<input type="radio" name="question_<?= $pregunta->ID_pregunta ?>" class="required" value="1" id="bad_<?= $counter ?>" data-counter="<?= $counter ?>">
+															<label class="radio smile_2" for="bad_<?= $counter ?>"><span>2</span></label>
+														</div>
+													</li>
+													<li>
+														<div class="container_smile">
+															<input type="radio" name="question_<?= $pregunta->ID_pregunta ?>" class="required" value="2" id="average_<?= $counter ?>" data-counter="<?= $counter ?>">
+															<label class="radio smile_3" for="average_<?= $counter ?>"><span>3</span></label>
+														</div>
+													</li>
+													<li>
+														<div class="container_smile">
+															<input type="radio" name="question_<?= $pregunta->ID_pregunta ?>" class="required" value="3" id="good_<?= $counter ?>" data-counter="<?= $counter ?>">
+															<label class="radio smile_4" for="good_<?= $counter ?>"><span>4</span></label>
+														</div>
+													</li>
+													<li>
+														<div class="container_smile">
+															<input type="radio" name="question_<?= $pregunta->ID_pregunta ?>" class="required" value="4" id="very_good_<?= $counter ?>" data-counter="<?= $counter ?>">
+															<label class="radio smile_5" for="very_good_<?= $counter ?>"><span>5</span></label>
+														</div>
+													</li>
+												</ul>
+												<div class="row justify-content-between add_bottom_25">
+													<div class="col-4">
+														<em>Muy mala</em>
+													</div>
+													<div class="col-4 text-end">
+														<em>Excelente</em>
+													</div>
+												</div>
+											</div>
+											<!-- <div class="form-group">
+												<label for="additional_message_label">Your Review</label>
+												<textarea name="additional_message" id="additional_message_label" class="form-control" style="height:180px;" onkeyup="getVals(this, 'additional_message');"></textarea>
+											</div> -->
+										</div>
+										<?php endforeach; ?>
+										<div class="submit step">
+											<h3 class="main_question"><strong>Finalizada</strong>Ingresa tu informaci&oacute;n</h3>
+											<!-- <div class="form-group">
+												<label for="firstname">Nombre</label>
+												<input type="text" name="firstname" id="firstname" class="form-control required" placeholder="Nombre completo">
+											</div>
+											<div class="form-group">
+												<label for="company">Empresa</label>
+												<input type="text" name="company" id="company" class="form-control required" placeholder="Nombre de la empresa">
+											</div> -->
+											<div class="form-group">
+												<label for="email">Correo</label>
+												<input type="email" name="email" id="email" class="form-control required" placeholder="Direcci&oacute;n de correo">
+											</div>
+											<div class="form-group">
+												<label for="observations">Comentarios</label>
+												<textarea id="observations" cols="30" rows="5" class="form-control" placeholder="Comentarios (Opcional)"></textarea>
+											</div>
+											<!-- <div class="form-group">
+												<label for="area">&Aacute;rea</label>
+												<input type="text" name="area" id="area" class="form-control required" placeholder="&Aacute;rea">
+											</div>
+											<div class="form-group">
+												<label for="cargo">Cargo</label>
+												<input type="text" name="cargo" id="cargo" class="form-control required" placeholder="Cargo">
+											</div>
+											<div class="form-group">
+												<label for="telephone">Tel&eacute;fono</label>
+												<input type="text" name="telephone" id="telephone" class="form-control required" placeholder="Tel&eacute;fono">
+											</div> -->
+											<!-- <div class="row">
+												<div class="col-lg-3 col-md-3 col-3">
+													<div class="form-group">
+														<label for="age">Age</label>
+														<input type="text" name="age" id="age" class="form-control">
+													</div>
+												</div>
+												<div class="col-9">
+													<div class="form-group radio_input">
+														<label class="container_radio">Male
+															<input type="radio" name="gender" value="Male" class="required">
+															<span class="checkmark"></span>
+														</label>
+														<label class="container_radio">Female
+															<input type="radio" name="gender" value="Female" class="required">
+															<span class="checkmark"></span>
+														</label>
+													</div>
+												</div>
+											</div> -->
+											<div class="form-group terms">
+												<!-- <label class="container_check">Por favor acepta el <a href="#" data-bs-toggle="modal" data-bs-target="#terms-txt" style="color:#fff; text-decoration: underline;">AVISO DE PRIVACIDAD</a> -->
+												<label class="container_check">He le&iacute;do y acepto el <a href="http://trasladosuniversales.com.mx/aviso.html" target="_BLANK" style="color:#000; text-decoration: underline;">AVISO DE PRIVACIDAD</a>
+													<input type="checkbox" name="terms" value="Yes" class="required">
+													<span class="checkmark"></span>
+												</label>
+											</div>
+										</div>
+									</div>
+									<div id="bottom-wizard">
+										<button type="button" name="backward" class="backward">Anterior</button>
+										<button type="button" name="forward" class="forward">Siguiente</button>
+										<button type="submit" name="process" class="submit">Enviar</button>
+									</div>
+								</form>
+							</div>
+						</div>
+					</div>
+					<?php endif; ?>
+				</div>
+			</div>
+			<footer>
+				<!-- <footer class="footer text-right" style="left: 0;">
+					<span class="pull-left"><strong>< ?= SITE_NAME ?></strong> <small>v21.08.0 <small>beta</small></small></span>
+					© < ?= date('Y') ?> < ?= SITE_NAME ?>
+				</footer> -->
+				<div class="container-fluid">
+					<div class="row">
+						<div class="col-md-3">
+							<span class="pull-left"><strong><?= SITE_NAME ?></strong> <small>v21.11.0 <small>beta</small></small></span>
+						</div>
+						<div class="col-md-9">
+							<ul class="clearfix">
+								<li>©<?= date('Y') ?> <?= SITE_NAME ?></li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</footer>
+		</div>
+		<!-- <div class="modal fade" id="terms-txt" tabindex="-1" role="dialog" aria-labelledby="termsLabel" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-centered">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title" id="termsLabel">Terms and conditions</h4>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<p>Lorem ipsum dolor sit amet, in porro albucius qui, in <strong>nec quod novum accumsan</strong>, mei ludus tamquam dolores id. No sit debitis meliore postulant, per ex prompta alterum sanctus, pro ne quod dicunt sensibus.</p>
+						<p>Lorem ipsum dolor sit amet, in porro albucius qui, in nec quod novum accumsan, mei ludus tamquam dolores id. No sit debitis meliore postulant, per ex prompta alterum sanctus, pro ne quod dicunt sensibus. Lorem ipsum dolor sit amet, <strong>in porro albucius qui</strong>, in nec quod novum accumsan, mei ludus tamquam dolores id. No sit debitis meliore postulant, per ex prompta alterum sanctus, pro ne quod dicunt sensibus.</p>
+						<p>Lorem ipsum dolor sit amet, in porro albucius qui, in nec quod novum accumsan, mei ludus tamquam dolores id. No sit debitis meliore postulant, per ex prompta alterum sanctus, pro ne quod dicunt sensibus.</p>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn_1" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div> -->
+		<script src="<?= URL_ROOT ?>/assets/js/jquery-3.6.0.min.js"></script>
+		<script src="<?= URL_ROOT ?>/assets/js/common_scripts.min.js"></script>
+		<script src="<?= URL_ROOT ?>/assets/js/functions.js"></script>
+		<script src="<?= URL_ROOT ?>/assets/js/survey_func.js"></script>
+		<script src="<?= URL_ROOT ?>/assets/plugins/moment/min/moment.min.js"></script>
+		<script src="<?= URL_ROOT ?>/assets/plugins/sweetalert/sweetalert.min.js"></script>
+		<script src="<?= URL_ROOT ?>/assets/plugins/confirm/js/jquery-confirm.min.js"></script>
+		<script src="<?= URL_ROOT ?>/assets/plugins/blockUI/jquery.blockUI.js"></script>
+		<script src="<?= URL_ROOT ?>/assets/plugins/md5/md5.min.js"></script>
+		<script src="<?=URL_ROOT?>/assets/js/jquery.slimscroll.js"></script>
+		<script src="<?= URL_ROOT ?>/assets/js/custom.js"></script>
+		<script>
+			$(function() {
+				<?php if($url->response): ?>
+				$apiUrl = '<?= URL_API ?>';
+				/* var inicio = moment().format('YYYY-MM-DD HH:mm:ss');
+				var final = null; */
+
+				$(document).find('.step input[type="radio"]').change(function(e) {
+					$.post($apiUrl+'save-enc-value/<?= $code ?>', {counter: parseInt($(this).data('counter'))-1, value: $(this).val()}, function() {}, 'json');
+					$(document).find('button.forward').trigger('click');
+				});
+
+				<?php if(isset($_SESSION['encuestas'][$code])): foreach($_SESSION['encuestas'][$code]->preguntas as $pregunta): if(isset($pregunta->temp_value)): ?>
+				$(document).find('input[name="question_<?= $pregunta->ID_pregunta ?>"][value="<?= $pregunta->temp_value ?>"]').prop('checked', true).trigger('change');
+				<?php else: break; endif; endforeach; endif; ?>
+
+				$('form').submit(function() {
+					data = {
+						inicio: '<?= $_SESSION['encuestas'][$code]->inicio ?>',
+						final: moment().format('YYYY-MM-DDTHH:mm:ss'),
+						ID_url: <?= $url->result->ID_url ?>,
+						/* nombre: $.trim($('#firstname').val()),
+						empresa: $.trim($('#company').val()), */
+						correo: $.trim($('#email').val()),
+						comentarios: $.trim($('#observations').val()),
+						/* area: $.trim($('#area').val()),
+						cargo: $.trim($('#cargo').val()),
+						telefono: $.trim($('#telephone').val()), */
+						respuestas: [],
+						code: '<?= $code ?>'
+					};
+
+					if(/* data.nombre!='' && data.empresa!='' &&  */data.correo!=''/*  && data.area!='' && data.cargo!='' && data.telefono!='' */ && $('[name="terms"]').is(':checked')) {
+						$.each($(document).find('.step'), function(index, item) { item = $(item);
+							ID_pregunta = item.data('id');
+							if($.isNumeric(ID_pregunta)) {
+								data.respuestas.push({
+									ID_pregunta: ID_pregunta,
+									puntaje: $('input[type="radio"][name="question_'+ID_pregunta+'"]:checked').val()
+								});
+							}
+						});
+	
+						blockPage();
+						$.post($apiUrl+'intento/add/', data, function(intento) {
+							if(intento.response) {
+								swal({ type:"success", title:"¡Listo!", text:"Se registraron tus respuestas exitosamente.", timer:4000 }, function() {
+									window.location.href = "https://trasladosuniversales.com.mx/contacto.html";
+								});
+							} else { swal({ type: "warning", title: "Oops!", text: intento.message, timer: 4000 }); $.unblockUI(); }
+						}, 'json');
+					}
+
+					return false;
+				});
+				<?php else: ?>
+				swal({ type: "warning", title: "Lo sentimos!", text: '<?= $url->message ?>', timer: 4000 }, function() { window.location.href = 'https://trasladosuniversales.com.mx/contacto.html'; });
+				<?php endif; ?>
+			});
+		</script>
+	</body>
+</html>

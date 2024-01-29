@@ -1,0 +1,31 @@
+<?php
+return [
+    'settings' => [
+        'displayErrorDetails' => true,
+
+        // Renderer settings
+        'renderer' => [
+            'template_path' => __DIR__ . '/../templates/',
+        ],
+
+        'rpt_renderer' => [
+            'template_path' => __DIR__ . '/../rpt/',
+        ],
+
+        // Monolog settings
+        'logger' => [
+            'name' => 'slim-app',
+            'path' => __DIR__ . '/../logs/app.log',
+        ],
+        
+        // Configuración de mi APP
+        'app_token_name'   => 'APP-TOKEN',
+        'connectionString' => [
+            // 'dns'  => 'sqlsrv:Server=2.tcp.ngrok.io,18218;Database=Tusa;',
+            // 'dns'  => 'odbc:Driver={SQL Server};Server=2.tcp.ngrok.io,18218;Database=Tusa;',
+            'dns'  => 'odbc:Driver={SQL Server};Server=40.86.91.134;Database=Tusa;',
+            'user' => 'tusasa', 
+            'pass' => '51s73m452019'
+        ]
+    ],
+];
