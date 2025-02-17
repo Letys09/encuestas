@@ -16,7 +16,12 @@
 			$usuario = $this->model->usuario->login($email, $contrasena);
 			if($usuario->response) {
 				//$_SESSION['token'] = $this->model->usuario->crearToken($usuario->result);
-
+				$fecha_cambio = $usuario->result->fecha_cambio;
+				
+				$fecha_cambio = new DateTime($fecha_cambio);
+				$today = new DateTime();
+	
+				$_SESSION['diferencia'] = $fecha_cambio->diff($today)->days;
 				$this->logger->info("Slim-Skeleton 'usuario/login/' ".$usuario->result->id_login);
 			}
 
@@ -29,6 +34,21 @@
 			$this->model->usuario->logout();
 
 			return $this->response->withRedirect('../login');
+		});
+
+		$this->get('validar/{password}', function($req, $res, $args){
+			return $res->withJson($this->model->usuario->validar($args['password']));
+		});
+
+		$this->post('change/', function($req, $res, $args){
+			error_reporting(0);
+			$parsedBody = $req->getParsedBody();
+			$parsedBody['fecha_cambio'] = date('Y-m-d');
+			$parsedBody['Password_portal'] = $parsedBody['password'];
+
+			$cambio = $this->model->usuario->change($parsedBody);
+			if( $cambio->response ) $_SESSION['diferencia'] = 0;
+			return $res->withJson($cambio);
 		});
 	});
 ?>

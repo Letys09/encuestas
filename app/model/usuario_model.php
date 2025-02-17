@@ -67,5 +67,42 @@
 
 			return $this->response;
 		}
+
+		public function validar($password){
+			$this->response = new Response();
+			$this->response->result = $this->db
+				->from($this->table)
+				->select(null)
+				->select("fk_matricula")
+				->where("password = '$password'")
+				->where("id_login", $_SESSION['usuario']->id_login)
+				->fetch();
+			if( $this->response->result ) return $this->response->SetResponse(true);
+			else return $this->response->SetResponse(false);
+		}
+
+		public function change($data){
+			$this->response = new Response();
+			$data['password'] = strrev(md5(sha1($data['password'])));
+			$id = $_SESSION['usuario']->id_login;
+			try {
+				$this->response->result = $this->db
+					->update($this->table, $data)
+					->where("id_login = $id")
+					->execute();		
+				if ($this->response->result) {
+					$this->response->SetResponse(true);
+				} else {
+					$this->response->SetResponse(false, 'No se actualizó el registro');
+				}
+			} catch (\PDOException $ex) {
+				$this->response->result = $data;
+				$this->response->errors = $ex;
+				$this->response->SetResponse(false, 'Error al actualizar la contraseña');
+			}
+		
+			return $this->response;
+		}
+		
 	}
 ?>
